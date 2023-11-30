@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -11,6 +13,7 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -18,10 +21,35 @@ public class MainManager : MonoBehaviour
     
     private bool m_GameOver = false;
 
-    
+
+    private int m_finalPoints;
+    private int m_bestPoints;
+
+    private void SetBestScore()
+    {
+       if(m_Points > GameControl.Instance._bestScore)
+        {
+            m_bestPoints = m_Points;
+            GameControl.Instance.SaveScore(GameControl.Instance._playerName, m_bestPoints);
+            BestScoreText.text = $"Best Score: {GameControl.Instance._playerName}: {m_bestPoints}";
+
+        }
+
+    }
+
     // Start is called before the first frame update
     void Start()
     {
+        GameControl.Instance.LoadScore();
+        Debug.Log("player name: " + GameControl.Instance._playerName);
+        if(GameControl.Instance._bestPlayer != "")
+        {
+            BestScoreText.text = $"Best Score: {GameControl.Instance._bestPlayer}: {GameControl.Instance._bestScore}";
+        }
+        else
+        {
+            BestScoreText.text = "";
+        }
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -45,7 +73,7 @@ public class MainManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 m_Started = true;
-                float randomDirection = Random.Range(-1.0f, 1.0f);
+                float randomDirection = UnityEngine.Random.Range(-1.0f, 1.0f);
                 Vector3 forceDir = new Vector3(randomDirection, 1, 0);
                 forceDir.Normalize();
 
@@ -55,6 +83,7 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
+            
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -70,6 +99,7 @@ public class MainManager : MonoBehaviour
 
     public void GameOver()
     {
+        SetBestScore();
         m_GameOver = true;
         GameOverText.SetActive(true);
     }
